@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Workout Tracker</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>Workout Tracker</h1>
+      <nav>
+        <button id="btn-home" class="nav-btn" title="Dashboard">🏠</button>
+        <button id="btn-new-session" class="nav-btn" title="Start Workout">➕</button>
+        <button id="btn-history" class="nav-btn" title="History">📖</button>
+        <button id="btn-templates" class="nav-btn" title="Templates">📑</button>
+        <button id="btn-settings" class="nav-btn" title="Settings">⚙️</button>
+      </nav>
+    </header>
+
+    <main id="app" class="app-container">
+      <!-- Views are injected here by app.js -->
+    </main>
+
+    <!-- Service Worker registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('service-worker.js');
+        });
+      }
+    </script>
+  </body>
+</html>
