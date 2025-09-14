@@ -25,7 +25,7 @@ const FIREBASE_CONFIG = {
   // public as it's required for initializing Firebase on the client.
       // Updated API key copied directly from Firebase console. Ensure this matches
       // the Config snippet exactly to avoid auth/api-key-not-valid errors.
-      apiKey: "AIzaSyBnwx25tL0Ur-IaNvPr-DukkmYUHAK1XTQ",
+      apiKey: "AIzaSyBnwx25tL0Ur-IaNvPr-DukkmYUHAKlXTQ",
   // The authDomain is used for Firebase Authentication and hosting-related
   // redirects. It typically follows the pattern <projectId>.firebaseapp.com.
   authDomain: "workout-tracker-pwa-2f02c.firebaseapp.com",
