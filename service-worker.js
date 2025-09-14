@@ -1,4 +1,7 @@
-const CACHE_NAME = 'workout-tracker-cache-v1';
+// Bump the cache name to force the service worker to fetch updated assets.
+// When the cache name changes, old caches will be removed during the activate
+// event, ensuring that updated files like config.js are served.
+const CACHE_NAME = 'workout-tracker-cache-v2';
 const ASSETS_TO_CACHE = [
   '.',
   'index.html',
