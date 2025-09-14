@@ -6,7 +6,15 @@
     <title>Workout Tracker</title>
     <link rel="manifest" href="manifest.json" />
     <link rel="stylesheet" href="styles.css" />
+    <!-- Chart.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase SDKs (compat versions) for optional cloud sync -->
+    <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <!-- Configuration file for feature flags and Firebase credentials -->
+    <script defer src="config.js"></script>
+    <!-- Main application logic -->
     <script defer src="app.js"></script>
   </head>
   <body>

@@ -39,6 +39,14 @@ let profileId = 'me';
 let data = null;
 let currentSession = null;
 
+// Firebase references (initialized when USE_FIREBASE is true)
+let firebaseApp = null;
+let auth = null;
+let db = null;
+
+// Current Firebase user
+let currentUser = null;
+
 // Elements
 const appContainer = document.getElementById('app');
 const navHome = document.getElementById('btn-home');
@@ -342,6 +350,17 @@ function addExerciseFlow() {
   if (!data.profiles[profileId].exercises[id]) {
     data.profiles[profileId].exercises[id] = { name: exName, tags: [] };
     saveData();
+    // Persist new exercise to Firestore
+    if (typeof USE_FIREBASE !== 'undefined' && USE_FIREBASE && currentUser) {
+      const exRef = db
+        .collection('users')
+        .doc(currentUser.uid)
+        .collection('profiles')
+        .doc(profileId)
+        .collection('exercises')
+        .doc(id);
+      exRef.set(data.profiles[profileId].exercises[id], { merge: true });
+    }
   }
   // Add first set for this exercise
   addSetToExercise(id);
@@ -388,15 +407,7 @@ function startRestTimer(set) {
 }
 
 // Finish session and save
-function finishSession() {
-  if (!currentSession) return;
-  currentSession.endedAt = new Date().toISOString();
-  const id = currentSession.startedAt;
-  data.profiles[profileId].workouts[id] = currentSession;
-  saveData();
-  currentSession = null;
-  showView(createHomeView());
-}
+// (see updated implementation below; this placeholder is removed)
 
 // Show history view
 function createHistoryView() {
@@ -687,14 +698,172 @@ function createSettingsView() {
 
 // Initialize app
 function init() {
-  loadData();
-  showView(createHomeView());
-  // Navigation events
+  // If Firebase is enabled, initialize it and handle authentication.
+  if (typeof USE_FIREBASE !== 'undefined' && USE_FIREBASE) {
+    try {
+      firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
+      auth = firebase.auth();
+      db = firebase.firestore();
+    } catch (e) {
+      console.error('Firebase initialization error', e);
+    }
+    // Listen for auth state changes
+    auth.onAuthStateChanged(async user => {
+      currentUser = user;
+      if (user) {
+        // Logged in
+        await loadDataFirebase();
+        showView(createHomeView());
+        registerNavHandlers();
+      } else {
+        // Not logged in
+        showView(createAuthView());
+      }
+    });
+  } else {
+    // Local-only mode
+    loadData();
+    showView(createHomeView());
+    registerNavHandlers();
+  }
+}
+
+// Register navigation button handlers
+function registerNavHandlers() {
   navHome.addEventListener('click', () => showView(createHomeView()));
   navNewSession.addEventListener('click', () => startNewSession());
   navHistory.addEventListener('click', () => showView(createHistoryView()));
   navTemplates.addEventListener('click', () => showView(createTemplatesView()));
   navSettings.addEventListener('click', () => showView(createSettingsView()));
+}
+
+// Authentication view for Firebase users
+function createAuthView() {
+  const container = document.createElement('div');
+  container.classList.add('view', 'active');
+  const h2 = document.createElement('h2');
+  h2.textContent = 'Sign In to Continue';
+  container.appendChild(h2);
+  const form = document.createElement('form');
+  form.style.display = 'flex';
+  form.style.flexDirection = 'column';
+  form.style.maxWidth = '300px';
+  form.style.gap = '0.5rem';
+  const emailInput = document.createElement('input');
+  emailInput.type = 'email';
+  emailInput.placeholder = 'Email';
+  emailInput.required = true;
+  form.appendChild(emailInput);
+  const passwordInput = document.createElement('input');
+  passwordInput.type = 'password';
+  passwordInput.placeholder = 'Password';
+  passwordInput.required = true;
+  form.appendChild(passwordInput);
+  const signInBtn = document.createElement('button');
+  signInBtn.type = 'submit';
+  signInBtn.className = 'primary';
+  signInBtn.textContent = 'Sign In';
+  form.appendChild(signInBtn);
+  const errorMsg = document.createElement('div');
+  errorMsg.style.color = 'var(--secondary)';
+  errorMsg.style.fontSize = '0.9rem';
+  container.appendChild(form);
+  container.appendChild(errorMsg);
+  const registerLink = document.createElement('button');
+  registerLink.className = 'outline';
+  registerLink.textContent = 'Create an account';
+  registerLink.addEventListener('click', async () => {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    try {
+      await auth.createUserWithEmailAndPassword(email, password);
+    } catch (err) {
+      errorMsg.textContent = err.message;
+    }
+  });
+  container.appendChild(registerLink);
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+    } catch (err) {
+      errorMsg.textContent = err.message;
+    }
+  });
+  return container;
+}
+
+// Load data from Firestore into local state
+async function loadDataFirebase() {
+  // initialize local data structure
+  data = { profiles: {} };
+  if (!data.profiles[profileId]) {
+    data.profiles[profileId] = { exercises: {}, workouts: {} };
+  }
+  if (!currentUser) return;
+  try {
+    // exercises
+    const exSnap = await db
+      .collection('users')
+      .doc(currentUser.uid)
+      .collection('profiles')
+      .doc(profileId)
+      .collection('exercises')
+      .get();
+    exSnap.forEach(doc => {
+      data.profiles[profileId].exercises[doc.id] = doc.data();
+    });
+    // workouts
+    const woSnap = await db
+      .collection('users')
+      .doc(currentUser.uid)
+      .collection('profiles')
+      .doc(profileId)
+      .collection('workouts')
+      .get();
+    woSnap.forEach(doc => {
+      data.profiles[profileId].workouts[doc.id] = doc.data();
+    });
+  } catch (err) {
+    console.error('Error loading data from Firebase', err);
+  }
+}
+
+// Save session to localStorage and Firestore
+function finishSession() {
+  if (!currentSession) return;
+  currentSession.endedAt = new Date().toISOString();
+  const id = currentSession.startedAt;
+  data.profiles[profileId].workouts[id] = currentSession;
+  saveData();
+  // Save to Firestore if enabled
+  if (typeof USE_FIREBASE !== 'undefined' && USE_FIREBASE && currentUser) {
+    const workoutRef = db
+      .collection('users')
+      .doc(currentUser.uid)
+      .collection('profiles')
+      .doc(profileId)
+      .collection('workouts')
+      .doc(id);
+    workoutRef.set(currentSession);
+    // also ensure exercises are saved
+    currentSession.sets.forEach(set => {
+      const exId = set.ex;
+      const exData = data.profiles[profileId].exercises[exId];
+      const exRef = db
+        .collection('users')
+        .doc(currentUser.uid)
+        .collection('profiles')
+        .doc(profileId)
+        .collection('exercises')
+        .doc(exId);
+      exRef.set(exData, { merge: true });
+    });
+  }
+  currentSession = null;
+  showView(createHomeView());
 }
 
 // Wait DOM ready
