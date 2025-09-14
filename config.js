@@ -23,7 +23,9 @@ const USE_FIREBASE = true;
 const FIREBASE_CONFIG = {
   // The API key is a unique identifier used by Firebase services. Keep this value
   // public as it's required for initializing Firebase on the client.
-  apiKey: "AIzaSyBnwx25tL0Ur-IaNvPr-DukmYUHAK1XTQ",
+      // Updated API key copied directly from Firebase console. Ensure this matches
+      // the Config snippet exactly to avoid auth/api-key-not-valid errors.
+      apiKey: "AIzaSyBnwx25tL0Ur-IaNvPr-DukkmYUHAK1XTQ",
   // The authDomain is used for Firebase Authentication and hosting-related
   // redirects. It typically follows the pattern <projectId>.firebaseapp.com.
   authDomain: "workout-tracker-pwa-2f02c.firebaseapp.com",
