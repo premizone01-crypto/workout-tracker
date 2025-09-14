@@ -218,7 +218,9 @@ const FIREBASE_CONFIG = {
   projectId: "workout-tracker-pwa-2f02c",
   // Cloud Storage bucket associated with the project. Note: newer projects use
   // the firebasestorage.app domain instead of appspot.com.
-  storageBucket: "workout-tracker-pwa-2f02c.firebasestorage.app",
+      // Use the default appspot.com domain for Cloud Storage. The bucket name
+      // for this project ends with `.appspot.com` instead of `firebasestorage.app`.
+      storageBucket: "workout-tracker-pwa-2f02c.appspot.com",
   // Sender ID for Firebase Cloud Messaging (used for notifications).
   messagingSenderId: "1006509696248",
   // Application ID that uniquely identifies this web app.

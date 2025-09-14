@@ -32,7 +32,10 @@ const FIREBASE_CONFIG = {
   // The storage bucket is the Cloud Storage bucket associated with your
   // Firebase project. Note the "firebasestorage.app" domain used by modern
   // Firebase projects.
-  storageBucket: "workout-tracker-pwa-2f02c.firebasestorage.app",
+  // Use the default appspot.com domain for Cloud Storage. The original
+  // bucket name from Firebase ends with `.appspot.com` rather than
+  // `firebasestorage.app`, so we update it accordingly.
+  storageBucket: "workout-tracker-pwa-2f02c.appspot.com",
   // The messaging sender ID is required for Firebase Cloud Messaging (FCM).
   messagingSenderId: "1006509696248",
   // The app ID uniquely identifies this specific web application instance.
